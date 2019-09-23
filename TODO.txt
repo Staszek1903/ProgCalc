@@ -1,0 +1,80 @@
+    TODO:
+	- zrobić nowe ścianki DONE
+    - przeczytać kod driverów , zrozumieć DONE
+	- driver input przycisków nie blokujący DONE uff
+	- płytke główną umieścić blisko pokrywki żeby rozluźnić kabelki DONE
+    - wymysleć jak zrobić maszyne nie urzywając calli (chyba) DONE
+     tak żeby nie zapisywały adresów powrotnych na stacku
+
+    Kod v0.1:
+        -kod maszyne na raize sie wywołuje z maina ( potem pomysleć jak usunąć C)
+        Mode klawiatury1 (operacje na stosie):
+        -wprowadzanie z klawiatury liczb na stack
+            klawisze 1-9,0 uruchamiają funkcje dec_input która pobiera liczbe ze stacku
+            mnoży ją razy 10 i dodaje nacisniety przycisk
+            nastepnie odkłada ją na stack
+        -przeprowadzenie operacji
+            przyciski: ABCDF pobierają dwa ostanie fragmenty stacku
+            oraz wykonują operacje
+        -wyswietlenie topu stacku
+            przycisk #
+        -wyseitlenie stack poitera
+            przycisk F1
+        -usówanie ostatniej liczby ze stacku
+            przycisk gwiazdka
+        
+        Funkcje:
+            DEC_INPUT, ADD, SUB, DIV, MUL, PUSH, POP, SHOW
+
+    Zamysł:
+         1) Mszyna wirtualna będąca zestawen funkcji
+         2) Stane maszyny jest stos zajmujący cały ram
+         3) Każda funkcja rozumie stan stosu 
+         4) Każda funkcjon może zmienić stos z 
+            jednego stanu zrozumiałego w inny
+         5) Funckje mogą być wywołane na trzy sposoby:
+            -przycisk na klawiaturze (lub ich kombinacja, maszyna stanów)
+            -byte w epromie (lub sekwencja)
+            -tekst z rs232
+         6) sposoby powyrzej mogą być tłumaczone z jednego na drugi
+            przy urzyciu odpowiedniej funkcji
+         7) Funkcje obejmują:
+            Peryferia:
+                - Klawiatura
+                - Ekram
+                - EEPROM 
+                - rs232  
+            Systemowe:
+                - alokacja/dealokacja na stosie
+                - ONP
+                - edytor kodu
+                - tlumaczenia reprezentacji funkcji
+                - system plikow
+                - komunikacja tekstowa
+                
+
+            
+            
+            
+
+    DODATKOWE NOTATKI
+
+        - sczytywanie stanu przysiku w przerwaniu timera
+        - informacje do kolejki eventów i tablicy stanu rzeczywistego
+        - edytor kodu
+            jako odnoga AVM zamiast wykonywać komendy przycisków 
+            na początku przechowuje je w ramie 
+            potem kompresuje i przechowuje w epromie
+            może działać na zasadzie sptronicowanie kiedy bedzie kończył sie ram
+            to wymaga algorytmu kompresującego i dekompresującego komendy
+            i algorytmu stronnicowania
+        - górne przyciski jako zmana mode klawiatury
+            pod różnymi modami będą sie kryły różne fcje klawiszy
+            to daje razem 16 klawiszy razy 4 mody czyli 64 funkcje
+            czyli w zapisie binarnym 6 bitów 
+            pozostałe 2 bity mogą być użyte do oznaczania stałych i innych bajtów specjalnych
+            w zapisanym programie
+        
+         
+    Jesli porgramy mają dostęp do wszystkich funckcji 
+    AVM to w takim razie program moze uruchomić inny proggram :)

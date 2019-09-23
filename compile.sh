@@ -10,11 +10,11 @@ fbin="./bin"
 out="out"
 
 i=0
+unset objs
 for src in `ls ./src`
 do
 	echo "compiling: $src"
 	avr-gcc -g -Os -mmcu=$mcu -o $fobj/${src%.*}.o -c $fsrc/$src
-	#avr-gcc -g -Os -mmcu=atmega8 -c main.c
 	objs[$i]="$fobj/${src%.*}.o"
 	let i=i+1
 done
@@ -31,6 +31,5 @@ if [[ $1 == '-w' ]]; then
 	echo "writing"
 	avrdude -c usbasp -p $mcu -U flash:w:"$fbin/$out.hex":i
 fi
-
 
 echo done	

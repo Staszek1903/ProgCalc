@@ -22,6 +22,9 @@
  LCD_RS = 7
 
  LCD_delay:
+	push r24
+	push r25
+	
 	clr r24
 	clr r25
 	LCD_delay_loop:
@@ -29,18 +32,25 @@
 	brne LCD_delay_loop
 	inc r25
 	brne LCD_delay_loop
+
+	pop r25
+	pop r24
 	ret
 
 LCD_wait:
-
+	push r24
+LCD_wait_w:
 	rcall LCD_getaddr
 	andi r24, 0x80
-	brne LCD_wait
+	brne LCD_wait_w
 
+	pop r24
 	ret
 
 .global LCD_init
 LCD_init:
+	push r24
+
 	in r24, ddr_B
 	sbr r24, 0x0f
 	out ddr_B,r24	;ustawiam magistrale jako wyjscie
@@ -76,15 +86,18 @@ LCD_init:
 	rcall LCD_wait
 	ldi r24, 0b01100
 	rcall LCD_command
+
+	pop r24
 	ret
 
 
 .global LCD_command
 LCD_command:
 	push r24
+	push r25
+	
 	rcall LCD_wait
-	pop r24
-
+	
 	in r25, ddr_B
 	sbr r25, 0x0f
 	out ddr_B, r25
@@ -96,8 +109,9 @@ LCD_command:
 .global LCD_data
 LCD_data:
 	push r24
+	push r25
+
 	rcall LCD_wait
-	pop r24
 
 	in r25, ddr_B
 	sbr r25, 0x0f
@@ -130,6 +144,8 @@ LCD_send:
 	nop
 	cbi port_D,LCD_E
 
+	pop r25
+	pop r24
 	ret
 
 .global LCD_getaddr
@@ -152,6 +168,8 @@ LCD_getchar:
 	sbi port_D, LCD_RS
 	
 LCD_recieve:
+	push r25	//saving used registers (r24 is return)
+
 	sbi port_D, LCD_E
 	nop
 	nop
@@ -171,11 +189,13 @@ LCD_recieve:
 	cbr r25, 0xf0
 	or r24, r25
 	
+	pop r25 //retrieving used registers
 	ret
 
 
 .global LCD_print
 LCD_print:
+	push r24
 	movw XL, r24
 	
 	LCD_print_loop:
@@ -186,38 +206,62 @@ LCD_print:
 		rjmp LCD_print_loop
 
 	LCD_print_end:
+
+	pop r24
 	ret
 
 
 .global	LCD_clear
 LCD_clear:
+	push r24
+	
 	ldi r24, 1
 	rcall LCD_command
+	
+	pop r24
 	ret
 
 .global LCD_setDDaddr
 LCD_setDDaddr:
+	push r24
+	
 	ori r24, 0x80
 	rcall LCD_command
+	
+	pop r24
 	ret
 
 .global LCD_setCGaddr
 LCD_setCGaddr:
+	push r24
+	
 	ori r24, 0x40
 	rcall LCD_command
+	
+	pop r24
 	ret
 
 .global LCD_EntryMode
 LCD_EntryMode:
+	push r24
+	push r22
+
 	andi r24, 0x02
 	andi r22, 1
 	or r24,r22
 	ori r24, 0x04
 	rcall LCD_command
+
+	pop r22
+	pop r24
 	ret
 
 .global LCD_DisplayControl
 LCD_DisplayControl:
+	push r24
+	push r22
+	push r20
+
 	andi r24, 0x04
 	andi r22, 0x02
 	andi r20, 0x01
@@ -225,6 +269,10 @@ LCD_DisplayControl:
 	or r24,r20
 	ori r24, 0x08
 	rcall LCD_command
+
+	pop r20
+	pop r22
+	pop r24
 	ret
 
 
