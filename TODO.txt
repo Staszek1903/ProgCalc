@@ -6,22 +6,27 @@
     - wymysleć jak zrobić maszyne nie urzywając calli (chyba) DONE
      tak żeby nie zapisywały adresów powrotnych na stacku
 
+    - pisać funkcje maszyny wirtualnej w wersji v1
+    - na początku stacku 64 bajty pamieci tablicowej
+
+
     Kod v0.1:
-        -kod maszyne na raize sie wywołuje z maina ( potem pomysleć jak usunąć C)
+        -kod maszyne na raize sie wywołuje z maina ( potem pomysleć jak usunąć C) DONE
         Mode klawiatury1 (operacje na stosie):
         -wprowadzanie z klawiatury liczb na stack
             klawisze 1-9,0 uruchamiają funkcje dec_input która pobiera liczbe ze stacku
             mnoży ją razy 10 i dodaje nacisniety przycisk
             nastepnie odkłada ją na stack
+            (libczy bez znaku dwubajtowe )
         -przeprowadzenie operacji
             przyciski: ABCDF pobierają dwa ostanie fragmenty stacku
             oraz wykonują operacje
-        -wyswietlenie topu stacku
-            przycisk #
-        -wyseitlenie stack poitera
-            przycisk F1
-        -usówanie ostatniej liczby ze stacku
-            przycisk gwiazdka
+
+        # -push 0 na stact (2 bajty)  
+        * - pop ze stacku
+        f1-wyseitlenie stack poitera
+        f2-wyswietlanie topu stacku
+        
         
         Funkcje:
             DEC_INPUT, ADD, SUB, DIV, MUL, PUSH, POP, SHOW
