@@ -52,12 +52,17 @@ tostr1B:
     tostr1B_loop:
         ldi r22, 10
         tst r24
-        breq tostr1B_loop2
+        breq tostr1B_loop_ext
         rcall div1B
         subi r22, -48
         push r22
         inc r23
         rjmp tostr1B_loop
+    tostr1B_loop_ext:
+        tst r23
+        brne tostr1B_loop2
+        ldi r24, 48
+        st x+, r24
     tostr1B_loop2:
         tst r23
         breq tostr1B_ext
@@ -93,12 +98,17 @@ tostr2B:
         ldi r22,10
         cp r24,r1
         cpc r25,r1
-        breq tostr2B_loop2
+        breq tostr2B_loop_ext
         rcall div2B
         subi r22, -48
         push r22
         inc r23
         rjmp tostr2B_loop
+    tostr2B_loop_ext:
+        tst r23
+        brne tostr2B_loop2
+        ldi r24, 48
+        st x+, r24
     tostr2B_loop2:
         tst r23
         breq tostr2B_ext

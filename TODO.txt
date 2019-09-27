@@ -6,8 +6,9 @@
     - wymysleć jak zrobić maszyne nie urzywając calli (chyba) DONE
      tak żeby nie zapisywały adresów powrotnych na stacku
 
-    - pisać funkcje maszyny wirtualnej w wersji v1
+    - pisać funkcje maszyny wirtualnej w wersji v1 DONE
     - na początku stacku 64 bajty pamieci tablicowej
+    - dopisać DIV i MUL dla operacji unsigned 2Bx2B
 
 
     Kod v0.1:
@@ -31,11 +32,13 @@
         Funkcje:
             DEC_INPUT, ADD, SUB, DIV, MUL, PUSH, POP, SHOW
 
+            
+
     Zamysł:
          1) Mszyna wirtualna będąca zestawen funkcji
-         2) Stane maszyny jest stos zajmujący cały ram
+         2) Stane maszyny jest stos zajmujący cały ram + rejestry r2..r15
          3) Każda funkcja rozumie stan stosu 
-         4) Każda funkcjon może zmienić stos z 
+         4) Każda funkcja może zmienić stos z 
             jednego stanu zrozumiałego w inny
          5) Funckje mogą być wywołane na trzy sposoby:
             -przycisk na klawiaturze (lub ich kombinacja, maszyna stanów)
