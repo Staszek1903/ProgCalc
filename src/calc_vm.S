@@ -6,39 +6,8 @@
  */
 
  #include <avr/io.h>
-
-.macro debug_reg reg pos
-    push r24
-    push r23
-    mov r24, \reg
-    ldi r23, \pos
-    rcall hexprint
-    pop r23
-    pop r24
-.endm
-
-.macro loadw_24 word
-    ldi r24, lo8(\word)
-    ldi r25, hi8(\word)
-.endm
-
-.macro loadw_x word
-    ldi xl, lo8(\word)
-    ldi xh, hi8(\word)
-.endm
-
-.macro loadw_y word
-    ldi yl, lo8(\word)
-    ldi yh, hi8(\word)
-.endm
-
-.macro loadw_z word
-    ldi zl, lo8(\word)
-    ldi zh, hi8(\word)
-.endm
-
-STPTL = _SFR_IO_ADDR(SPL)
-STPTH = _SFR_IO_ADDR(SPH)
+ #include "../inc/macros.S"
+ #include "../inc/defines.S"
 
 powitansko:
 .asciz "press any key"
@@ -46,15 +15,13 @@ powitansko:
 .global calc_vm
 .global vm_loop
 calc_vm:
-    loadw_z(powitansko)
-    loadw_x(255)
-    loadw_24(255)
-    rcall strlpm
-    rcall LCD_print
 
-    loadw_24(RAMEND)
+    printstrpm powitansko 1
+
+    loadw_24(TEMP_RAM -1)       ; load first stack bottom into stack pointer
     out _SFR_IO_ADDR(SPL), r24
     out _SFR_IO_ADDR(SPH), r25
+    movw stack_bottomL, r24
     
     ldi xl, 0xff
     ldi xh, 0x00
@@ -68,25 +35,52 @@ calc_vm:
     rcall LCD_print
 
     clr r25
-    mov r2, 25 // last_key
+    mov last_key, r25
+    mov vm_state, r25
+    mov r1, r25
+    mov keypad_mode, r25
 
     vm_loop:
-        rcall kp_getkey
-        cp r2, r24
-        breq vm_loop
-        mov r2, r24
-        tst r2
-        breq vm_loop
 
-        ldi zl, pm_lo8(functions_table)
-        ldi zh, pm_hi8(functions_table)
+        cp vm_state, zero_reg
+        breq vm_k ; dont output if state not raised 
+             mov vm_state, zero_reg    ; clear state
+             rjmp show_top
+
+        vm_k:
+        ldi r24, 2
+        rcall delay3B
+        rcall kp_getkey ; reading keypad state
+        cp r2, r24      ; is same as previous
+        breq vm_loop    ; continue if is same
+        mov r2, r24     ; save new state if diferent
+        tst r2          ; check zero
+        breq vm_loop    ; continue if zero, no button pressed
+
+        /* debug 
+            debug_reg last_key 8
+            rjmp vm_loop
+        */
+
+        ldi r24, KP_DECIMAL
+        cp keypad_mode, r24
+        brne vm_boolean 
+            ldi zl, pm_lo8(functions_table_decimal)
+            ldi zh, pm_hi8(functions_table_decimal)
+        rjmp vm_exec
+        vm_boolean:
+            ldi zl, pm_lo8(functions_table_boolean)
+            ldi zh, pm_hi8(functions_table_decimal)
+        
+        vm_exec:
         add zl, r2
         adc zh, r1
+        inc vm_state ; raise state for prinitng stack
         ijmp
 
     rjmp vm_loop
 
-functions_table:
+functions_table_decimal:
     rjmp no_func
 
     rjmp dec_input
@@ -102,15 +96,46 @@ functions_table:
     rjmp dec_input
     rjmp dec_input
     rjmp dec_input
-    rjmp no_func
+    rjmp calc_mul
 
     rjmp calc_pop
     rjmp dec_input
     rjmp calc_push
-    rjmp no_func
+    rjmp calc_div
 
     rjmp show_sp
     rjmp show_top
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+
+functions_table_boolean:
+    rjmp no_func
+    
+    rjmp calc_eq
+    rjmp calc_gt
+    rjmp calc_lt
+    rjmp calc_and
+    
+    rjmp calc_neq
+    rjmp calc_ngt
+    rjmp calc_nlt
+    rjmp calc_or
+
     rjmp no_func
     rjmp no_func
+    rjmp no_func
+    rjmp calc_xor
+
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+    rjmp calc_not
+
+    rjmp show_sp
+    rjmp show_top
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+
+
+
 

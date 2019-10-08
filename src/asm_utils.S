@@ -36,6 +36,23 @@ strlpm:
     pop r24
     ret
 
+
+
+.global printstrpm
+printstrpm:
+    push r24
+    rcall LCD_setDDaddr
+    printstrpm_loop:
+        lpm r24, z+     // TODO + makro for const argument loading
+        tst r24
+        breq printstrpm_end
+        rcall LCD_data
+        rjmp printstrpm_loop
+    printstrpm_end:
+
+    pop r24
+ret
+
 /*
 * 1 byte for now r24 destination pointer in x
 */
