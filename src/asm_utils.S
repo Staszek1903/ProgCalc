@@ -293,11 +293,12 @@ delay3B:
 waitforinput:
     push r24
     waitforinput_loop:
+    ldi r24, 10
+    rcall delay3B
     rcall kp_getkey
     tst r24
     breq waitforinput_loop
     ldi r24, 30
-    rcall delay3B
     pop r24
     ret
 

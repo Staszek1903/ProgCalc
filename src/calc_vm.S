@@ -69,12 +69,28 @@ calc_vm:
             ldi zh, pm_hi8(functions_table_decimal)
         rjmp vm_exec
         vm_boolean:
+        ldi r24, KP_BOOLEAN
+        cp keypad_mode, r24
+        brne vm_misc1
             ldi zl, pm_lo8(functions_table_boolean)
-            ldi zh, pm_hi8(functions_table_decimal)
-        
+            ldi zh, pm_hi8(functions_table_boolean)
+        rjmp vm_exec
+        vm_misc1:
+        ldi r24, KP_MISC1
+        cp keypad_mode, r24
+        brne vm_misc2
+            ldi zl, pm_lo8(functions_table_misc1)
+            ldi zh, pm_hi8(functions_table_misc1)
+        rjmp vm_exec
+        vm_misc2:
+        ldi r24, KP_MISC2
+        cp keypad_mode, r24
+        brne vm_loop
+            ldi zl, pm_lo8(functions_table_misc2)
+            ldi zh, pm_hi8(functions_table_misc2)
         vm_exec:
-        add zl, r2
-        adc zh, r1
+        add zl, last_key
+        adc zh, zero_reg
         inc vm_state ; raise state for prinitng stack
         ijmp
 
@@ -103,8 +119,8 @@ functions_table_decimal:
     rjmp calc_push
     rjmp calc_div
 
-    rjmp show_sp
-    rjmp show_top
+    rjmp kp_mode_change
+    rjmp kp_mode_change
     rjmp kp_mode_change
     rjmp kp_mode_change
 
@@ -126,13 +142,71 @@ functions_table_boolean:
     rjmp no_func
     rjmp calc_xor
 
+    rjmp calc_pop
     rjmp no_func
-    rjmp no_func
-    rjmp no_func
+    rjmp calc_push
     rjmp calc_not
+
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+
+functions_table_misc1:
+
+    rjmp no_func
 
     rjmp show_sp
     rjmp show_top
+    rjmp no_func
+    rjmp no_func
+
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+
+    rjmp calc_pop
+    rjmp no_func
+    rjmp calc_push
+    rjmp no_func
+
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+    rjmp kp_mode_change
+
+functions_table_misc2:
+
+    rjmp no_func
+
+    rjmp show_top
+    rjmp show_sp
+    rjmp no_func
+    rjmp no_func
+
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+    rjmp no_func
+
+    rjmp calc_pop
+    rjmp test_func
+    rjmp calc_push
+    rjmp no_func
+
+    rjmp kp_mode_change
+    rjmp kp_mode_change
     rjmp kp_mode_change
     rjmp kp_mode_change
 

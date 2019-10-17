@@ -16,13 +16,20 @@
 
     - zrobić kod w wersji v0.2 <= to robić pierwsze !!!!
         - zabezpieczenia i BOOLE i może fcje
+
+!!! -ZDEBUGOWAĆ CP I SREG w calc_eq DONE
+    - programing mode
+    - pamieć EEPROM
+    - popy i pushe 
+        w tym ekran
+    
     
     - przemysleć funkcje 
         - zapis danych lokalnych (wskaźnikowo/stosowo)
         -constansy
     - funkcje do dostawanie sie do dowolnej komórki w pamieci
     - funkcje referencji i dereferencji
-
+    WSZYTSKO ABOVE PRZEZ POPY I PUSHE
     
 
 
@@ -55,13 +62,23 @@
             rejestry limit_up  r4:r5 -limit down r6:r7-
             EDIT: tylko limit_up (czyli początek stosu, w danym momęcie), max_stosu stały 
             zabezpieczają nie tylko stos ale i dane lokalne funkcji na przykład
-        - funkcje boolowe też zwracające 16 bit EQ LT GT AND OR NOT XOR PRAWIE DONE
+
+        - funkcje boolowe też zwracające 16 bit EQ LT GT AND OR NOT XOR DONE
+
         - funcja NEG (dopełnienie dwójek) (kiedy indziej)
             za czym idzie reprezantacja danych signed
+
         - funkcje do operacji na ekranie
+            pamięć ekranu jako rozszerzenie virtualne pamieci operacyjnej
+
         - funkcje do operacji na pamięci EEPROM
+
         - ziszczone marzenia o inpucie w przerwaniu
         - różne metody adresowania w funkcjach pop i push
+            push imidiate   
+            push i pop direct (z do adresu pamieci)
+            push i pop indirect( z wskaznika z adresu pamieci)
+            push i pop local (obecna zmienna funkcji)
         
             
 
@@ -123,5 +140,5 @@
     BUGI I OPTYMALIZACJE:
         -OPT- przy wyborze funkcji sprawdzanie przepełnienia 
         stosu i pobranie argumentów wywali przed wywołania funkcji
-        -BUG- checki stosu wylatują poza nawias
-        -BUG- mode klawiatury nie wraca od poprzedniego
+        -BUG- checki stosu wylatują poza nawiasXD       FIXED
+        -BUG- mode klawiatury nie wraca od poprzedniego FIXED

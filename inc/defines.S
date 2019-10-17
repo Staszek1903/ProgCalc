@@ -32,5 +32,7 @@ RAMBEGIN = 0x60
 //kp modes
 KP_DECIMAL = 0
 KP_BOOLEAN = 1
+KP_MISC1 = 2
+KP_MISC2 = 3
 
 #endif /* _DEFINES_S_ */

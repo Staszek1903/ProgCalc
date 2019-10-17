@@ -20,24 +20,33 @@
 .macro check_stackptr_bottom
     in r24, STPTL           ; load stack ptr value
     in r25, STPTH
-    cp r24, stack_bottomL   ; compare woth bottom
-    cpc r25, stack_bottomH
-    brsh empty_stack_error_pass  ; jump to error
-.endm
-empty_stack_error_pass:
+    subi r24, -1
+    sbc r24, zero_reg
+    cp r24, stack_bottomL   ; compare with bottom
+    cpc r25, stack_bottomH  
+    in r24, _SFR_IO_ADDR(SREG)
+    sbrs r24, SREG_C
     rjmp empty_stack_error
+
+.endm
+
 
 /*
  */
 .macro check_stackptr_top
     in r24, STPTL           ; load stack ptr value
     in r25, STPTH
-    cpi r24, RAMBEGIN+2
+    cpi r24, RAMBEGIN+4
     cpc r25, r1
-    brlo stack_overflow_error_pass
-.endm
-stack_overflow_error_pass:
+    in r24, _SFR_IO_ADDR(SREG)
+    sbrc r24, SREG_C
     rjmp stack_overflow_error
+.endm
+
+mode_str:
+.asciz "MODE: "
+.byte 0
+
 
 /*
  * clr vm_state
@@ -82,6 +91,20 @@ show_top:
     rcall tostr2B
     movw r24,xl
     rcall LCD_print
+
+    printstrpm mode_str 0x40
+    debug_reg keypad_mode 0x45          ; showing mode
+
+    ldi r24, ' '
+    rcall LCD_data                     ; puting space
+
+    in r24, _SFR_IO_ADDR(SPL)
+    in r25, _SFR_IO_ADDR(SPH)
+    ldi xl, 0xff
+    ldi xh, 0x00
+    rcall tostr2B
+    movw r24,xl
+    rcall LCD_print                     ; showing stack pointer
 
 rjmp vm_loop
 
@@ -209,13 +232,11 @@ rjmp vm_loop
 no_func:
 rjmp vm_loop
 
-
 .global kp_mode_change
 kp_mode_change:
-    override_stack_print
 
     mov r24, last_key
-    subi r24, 13
+    subi r24, 0x11
     mov keypad_mode, r24
     
 rjmp vm_loop
@@ -226,118 +247,195 @@ rjmp vm_loop
 
 .global calc_eq
 calc_eq:
-   ; check_stackptr_bottom
-    pop r24
-    pop r25
-calc_eq_regs:
-    cp r24, zero_reg
-    cpc r25, zero_reg
-    breq calc_bool_true
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
+    pop r22
+    pop r23
+
+    cp r26, r22
+    cpc r27, r23
+
+    in r24, _SFR_IO_ADDR(SREG)
+    sbrs r24, SREG_Z
     rjmp calc_bool_false
+    rjmp calc_bool_true
 
 .global calc_gt
 calc_gt:
-  ;  check_stackptr_bottom
-    pop r24
-    pop r25
-  ;  check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    cp r24, r22
-    cpc r25, r23
-    brsh calc_bool_true
+calc_gt_regs:
+    cp r26, r22
+    cpc r27, r23
+
+    in r24, _SFR_IO_ADDR(SREG)
+    in r25, _SFR_IO_ADDR(SREG)
+    lsr r25
+    or r24, r25
+    andi r24, 1
+
+    sbrs r24, SREG_C
+    rjmp calc_bool_true
     rjmp calc_bool_false
 
 .global calc_lt
 calc_lt:
-  ;  check_stackptr_bottom
-    pop r24
-    pop r25
-  ;  check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    cp r24, r22
-    cpc r25, r23
-    brlo calc_bool_true
+    cp r26, r22
+    cpc r27, r23
+
+    in r24, _SFR_IO_ADDR(SREG)
+    sbrc r24, SREG_C
+    rjmp calc_bool_true
     rjmp calc_bool_false
 
 .global calc_neq
 calc_neq:
-  ;  check_stackptr_bottom
-    pop r24
-    pop r25
-    cp r24, zero_reg
-    cpc r25, zero_reg
-    breq calc_bool_false
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
+    pop r22
+    pop r23
+    cp r26, r22
+    cpc r27, r23
+
+    in r24, _SFR_IO_ADDR(SREG)
+    sbrs r24, SREG_Z
     rjmp calc_bool_true
+    rjmp calc_bool_false
 
 .global calc_ngt
 calc_ngt:
-  ;  check_stackptr_bottom
-    pop r24
-    pop r25
-  ;  check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    cp r24, r22
-    cpc r25, r23
-    brsh calc_bool_false
+    cp r26, r22
+    cpc r27, r23
+
+    in r24, _SFR_IO_ADDR(SREG)  ; get C bit
+    in r25, _SFR_IO_ADDR(SREG)  ; get Z bit
+    lsr r25                     ; move Z bit to LSB position
+    or r24, r25                 ; Z | C
+    andi r24, 1                 ; mask LSB
+
+    sbrs r24, SREG_C                 ; if Z | C then true
+    rjmp calc_bool_false
     rjmp calc_bool_true
 
 .global calc_nlt
 calc_nlt:
-  ;  check_stackptr_bottom
-    pop r24
-    pop r25
-   ; check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    cp r24, r22
-    cpc r25, r23
-    brlo calc_bool_false
+    cp r26, r22
+    cpc r27, r23
+    in r24, _SFR_IO_ADDR(SREG)  ; get C bit from sreg
+    sbrs r24, SREG_C            ; when C is set trzen false
     rjmp calc_bool_true
+    rjmp calc_bool_false
 
 .global calc_and
 calc_and:
-    ;  check_stackptr_bottom
-    pop r24
-    pop r25
-    ; check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    cp r24, zero_reg
-    cpc r25, zero_reg
+    cp r26, zero_reg
+    cpc r27, zero_reg
     breq calc_and_zero
-        ldi r24, 0xff
-        ldi r25, 0xff
+        ldi r26, 0xff
+        ldi r27, 0xff
     rjmp calc_and_ext
     calc_and_zero:
-        ldi r24, 0x00
-        ldi r25, 0x00
+        ldi r26, 0x00
+        ldi r27, 0x00
     calc_and_ext:
-    and r24, r22
-    and r25, r23
-    rjmp calc_eq_regs
+    and r26, r22
+    and r27, r23
+    clr r22
+    clr r23
+    rjmp calc_gt_regs
 
 
 .global calc_or
 calc_or:
-    ;  check_stackptr_bottom
-    pop r24
-    pop r25
-    ; check_stackptr_bottom
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
     pop r22
     pop r23
-    or r24, r22
-    or r25, r23
-    rjmp calc_eq_regs
+    or r26, r22
+    or r27, r23
+    clr r22
+    clr r23
+    rjmp calc_gt_regs
 
 .global calc_xor
 calc_xor:
+    check_stackptr_bottom
+    pop r26
+    pop r27
+    check_stackptr_bottom
+    pop r22
+    pop r23
+    cp r26, zero_reg
+    cpc r27, zero_reg
+    breq calc_xor_zero
+        ldi r26, 0xff
+        ldi r27, 0xff
+    rjmp calc_xor_ext
+    calc_xor_zero:
+        ldi r26, 0x00
+        ldi r27, 0x00
+    calc_xor_ext:
+
+    cp r22, zero_reg
+    cpc r23, zero_reg
+    breq calc_xor_zero1
+        ldi r22, 0xff
+        ldi r23, 0xff
+    rjmp calc_xor_ext1
+    calc_xor_zero1:
+        ldi r22, 0x00
+        ldi r23, 0x00
+    calc_xor_ext1:
+    eor r26, r22
+    eor r27, r23
+    clr r22
+    clr r23
+
+    rjmp calc_gt_regs
 
 .global calc_not
 calc_not:
-
+    check_stackptr_bottom
+    pop r24
+    pop r25
+    cp r24, zero_reg
+    cpc r25, zero_reg
+    breq calc_bool_true
+    rjmp calc_bool_false
 
 calc_bool_true:
     ldi r16, 0xff
@@ -349,3 +447,18 @@ calc_bool_ext:
     push r16
     push r16
     rjmp vm_loop
+
+
+.global test_func
+test_func:
+    override_stack_print
+    ldi r24, SREG
+    debug_reg r24 0x41
+    ldi r24, _SFR_IO_ADDR(SREG)
+    debug_reg r24 0x44
+    ldi r24, SREG_C
+    debug_reg r24 0x48
+rjmp vm_loop
+
+
+

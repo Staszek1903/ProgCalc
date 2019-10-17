@@ -15,17 +15,18 @@ se_err_msg:
 so_err_msg:
 .asciz "STACK OVERFLOW"
 
+clear_line:
+.asciz "                "
+.byte 0
+
 .global empty_stack_error
 empty_stack_error:
     
-    rcall LCD_clear
-    loadw_z(se_err_msg)
-    loadw_x(TEMP_RAM)
-    loadw_24(TEMP_RAM)
-    rcall strlpm
-    rcall LCD_print
+    printstrpm se_err_msg 0
+    ldi r24, 20
+    rcall delay3B 
+    printstrpm clear_line 0
 
-    rcall waitforinput
 rjmp vm_loop
     
 
@@ -36,13 +37,10 @@ stack_overflow_error:
     out STPTH, r25
     movw stack_bottomL, r24
 
-    rcall LCD_clear
-    loadw_z(so_err_msg)
-    loadw_x(TEMP_RAM)
-    loadw_24(TEMP_RAM)
-    rcall strlpm
-    rcall LCD_print
+    printstrpm so_err_msg 0
+    ldi r24, 20
+    rcall delay3B 
+    printstrpm clear_line 0
 
-    rcall waitforinput
 rjmp vm_loop
 
